@@ -30,8 +30,8 @@
 LinkedList* gImageList = NULL;
 
 void* find_image_list() {
-	unsigned int ref = find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x50000, "tobi");
-	ImageDescriptor* image = (ImageDescriptor*)ref-0x1C;
+	unsigned int ref = find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x50000, "blli");
+	ImageDescriptor* image = (ImageDescriptor*)(ref-0x1C);
 	return image->list.prev;
 }
 
@@ -94,8 +94,8 @@ void image_display_list() {
 		type[2] = (image->info.imageIdentifier & 0xFF00) >> 8;
 		type[3] = (image->info.imageIdentifier & 0xFF);
 		type[4] = '\0';
-		printf("  %p: bdev: %p type: %s offset: 0x%05x len: 0x%x\n", image,
-				image->device, type, image->startAddress, image->info.imageSize);
+		printf("  %p: bdev: %p type: %s id: 0x%08x offset: 0x%05x len: 0x%x\n", image,
+				image->device, type, image->info.imageIdentifier, image->startAddress, image->info.imageSize);
 
 		list = image->list.next;
 	}
