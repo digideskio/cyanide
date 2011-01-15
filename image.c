@@ -30,9 +30,14 @@
 LinkedList* gImageList = NULL;
 
 void* find_image_list() {
-	unsigned int ref = find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x50000, "blli");
+	unsigned int ref = find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x50000, "tobi");
 	ImageDescriptor* image = (ImageDescriptor*)(ref-0x1C);
-	return image->list.prev;
+	image = image->list.prev;
+	/* If we have an LLB - list it too... */
+	if (image->info.imageIdentifier == IMAGE_LLB) {
+		image = image->list.prev;
+	}
+	return image;
 }
 
 int image_init() {
