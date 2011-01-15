@@ -55,7 +55,7 @@ void* find_task_exit() {
 
 void* find_task_start() {
 	unsigned int x = patch_find(TARGET_BASEADDR, 0x40000, "\x90\xB5\x01\xAF\x43\x69\x04\x46", 8);
-	return x+1;
+	return (void*)(x+1);
 }
 
 int task_init() {

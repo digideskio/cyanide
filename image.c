@@ -31,7 +31,7 @@ LinkedList* gImageList = NULL;
 
 void* find_image_list() {
 	unsigned int ref = find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x50000, "tobi");
-	ImageDescriptor* image = ref-0x1C;
+	ImageDescriptor* image = (ImageDescriptor*)ref-0x1C;
 	return image->list.prev;
 }
 
@@ -144,7 +144,7 @@ int image_decrypt(void* image) {
 #else
     printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize256, kAesTypeGid);
 	aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, kAesSize256, kAesTypeGid, 0, 0);
-#endif*/
+#endif
 
 
     /* Decrypt data */

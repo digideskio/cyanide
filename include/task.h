@@ -110,6 +110,6 @@ void task_display_list();
 TaskDescriptor* task_find(const char* name);
 int task_display_info(const char* name);
 //void task_start(TaskDescriptor* task);
-//void task_exit(TaskDescriptor* task);
+void task_exit(TaskDescriptor* task);
 
 #endif /* TASK_H */

@@ -39,7 +39,7 @@ int(*kernel_atv_load)(char* boot_path, char** output) = NULL;
 int(*kernel_load)(void* input, int max_size, char** output) = NULL;
 
 void* find_kernel_bootargs() {
-	return find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x40000, "rd=md0");
+	return (void*)find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x40000, "rd=md0");
 }
 
 void* find_kernel_load() {

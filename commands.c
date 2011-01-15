@@ -37,10 +37,10 @@ CmdInfo** gCmdCommands = NULL;
 unsigned char* gCmdListEnd = NULL;
 unsigned char* gCmdListBegin = NULL;
 int(*fsboot)(void) = NULL;
-int(*jump_to)(int flags, void* addr, int phymem) = NULL;
+int(*jump_to)(int flags, void* addr, void* phymem) = NULL;
 int(*load_ramdisk)(int argc) = NULL;
 
-void hooked(int flags, void* addr, int phymem);
+void hooked(int flags, void* addr, void* phymem);
 
 /*
  * Private Functions
@@ -55,12 +55,10 @@ void* find_cmd_list_begin() {
 
 	int i = 0;
 	for(i = 0; i < 0x80; i += 4) {
-		unsigned int* command = reference-i;
-		if(*command == NULL) {
-			return command+1;
-		} else if (command < TARGET_BASEADDR || command >= TARGET_BASEADDR + 0x40000) {
-			return command+1;
-		} else if (*command < TARGET_BASEADDR || *command >= TARGET_BASEADDR + 0x40000) {
+		unsigned int* command = (unsigned int*)(reference-i);
+		if(	*command == NULL ||
+				(unsigned int)command < TARGET_BASEADDR || (unsigned int)command >= TARGET_BASEADDR + 0x40000 ||
+				*command < TARGET_BASEADDR || *command >= TARGET_BASEADDR + 0x40000) {
 			return command+1;
 		}
 	}
@@ -284,6 +282,7 @@ int cmd_jump(int argc, CmdArg* argv) {
 	void* address = NULL;
 	if(argc < 2) {
 		puts("usage: jump <address>\n");
+    puts("   or: jump <flags> <address> <phymem>\n");
 		return 0;
 	}
 	if(argc == 2) {
@@ -291,8 +290,8 @@ int cmd_jump(int argc, CmdArg* argv) {
 		jump_to(0, address, 0);
 	}
 	if(argc == 4) {
-		address = (void*) argv[1].uinteger;
-		jump_to(argv[2].uinteger, argv[2].uinteger, argv[2].uinteger);
+		address = (void*) argv[2].uinteger;
+		jump_to(argv[1].uinteger, address, (void*)(argv[3].uinteger));
 	}
 
 	return 0;
@@ -423,7 +422,7 @@ void clear_icache() {
     __asm__("nop");
 };
 
-void hooked(int flags, void* addr, int phymem) {
+void hooked(int flags, void* addr, void* phymem) {
 	// patch kernel
 	printf("Entered hooked jump_to function!!!\n");
 	printf("Patching kernel\n");

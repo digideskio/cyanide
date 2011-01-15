@@ -51,7 +51,7 @@ extern int gCmdCount;
 extern Bool gCmdHasInit;
 extern CmdInfo** gCmdCommands;
 
-extern int(*jump_to)(int flags, void* addr, int phymem);
+extern int(*jump_to)(int flags, void* addr, void* phymem);
 extern int(*load_ramdisk)(int argc);
 
 int cmd_init();

@@ -25,6 +25,7 @@
 #include "lock.h"
 #include "common.h"
 #include "commands.h"
+#include "functions.h"
 
 static unsigned char push = 0xB5;
 static unsigned char push_r7_lr[] = { 0x80, 0xB5 };
@@ -51,17 +52,12 @@ static unsigned char* functions[][3] = {
 	{ NULL, NULL, NULL }
 };
 
-unsigned int find_reference(unsigned char* data, unsigned int base, unsigned int size, char* signature) {
+unsigned int find_reference(unsigned int dataaddr, unsigned int base, unsigned int size, const char* signature) {
+	unsigned char* data = (unsigned char*)dataaddr;
 	unsigned int i = 0;
 
 	// First find the string
-	unsigned int address = 0;
-	for(i = 0; i < size; i++) {
-		if(!memcmp(&data[i], signature, strlen(signature))) {
-			address = base | i;
-			break;
-		}
-	}
+	unsigned int address = find_string(dataaddr, base, size, signature);
 	if(address == 0) return NULL;
 
 	// Next find where that string is referenced
@@ -86,7 +82,8 @@ unsigned int find_reference(unsigned char* data, unsigned int base, unsigned int
 	return reference2;
 }
 
-unsigned int find_top(unsigned char* data, unsigned int base, unsigned int size, unsigned int address) {
+unsigned int find_top(unsigned int dataaddr, unsigned int base, unsigned int size, unsigned int address) {
+	unsigned char* data = (unsigned char *)dataaddr;
 	// Find the top of that function
 	int i = 0;
 	unsigned int function = 0;
@@ -100,7 +97,8 @@ unsigned int find_top(unsigned char* data, unsigned int base, unsigned int size,
 	if(function == 0) return NULL;
 }
 
-unsigned int find_offset(unsigned char* data, unsigned int base, unsigned int size, unsigned char** what) {
+unsigned int find_offset(unsigned int dataaddr, unsigned int base, unsigned int size, unsigned char** what) {
+	unsigned char* data = (unsigned char *)dataaddr;
 	unsigned int i = 0;
 	unsigned char* top = what[2];
 	unsigned char* name = what[0];
@@ -108,14 +106,7 @@ unsigned int find_offset(unsigned char* data, unsigned int base, unsigned int si
 	unsigned int dbase = (unsigned int) data;
 
 	// First find the string
-	unsigned int address = 0;
-	for(i = 0; i < size; i++) {
-		if(!memcmp(&data[i], signature, strlen(signature))) {
-			address = base | i;
-			break;
-		}
-	}
-	if(address == 0) return NULL;
+	unsigned int address = find_string(dataaddr, base, size, signature);
 
 	// Next find where that string is referenced
 	unsigned int reference = 0;
@@ -141,20 +132,21 @@ unsigned int find_offset(unsigned char* data, unsigned int base, unsigned int si
 	return function;
 }
 
-unsigned int find_string(unsigned char* data, unsigned int base, unsigned int size, const char* name) {
-	// First find the string
+unsigned int find_string(unsigned int dataaddr, unsigned int base, unsigned int size, const char* name) {
+	unsigned char* data = (unsigned char *)dataaddr;
+	// Find the string
 	int i = 0;
 	unsigned int address = 0;
 	for(i = 0; i < size; i++) {
 		if(!memcmp(&data[i], name, strlen(name))) {
-			address = &data[i];
+			address = (unsigned int)&data[i];
 			break;
 		}
 	}
 	return address;
 }
 
-void* find_function(const char* name, unsigned char* target, unsigned char* base) {
+void* find_function(const char* name, unsigned int target, unsigned int base) {
 	int i = 0;
 	unsigned int found = 0;
 	for(i = 0; i < sizeof(functions); i++) {

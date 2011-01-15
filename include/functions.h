@@ -20,11 +20,11 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-unsigned int find_reference(unsigned char* data, unsigned int base, unsigned int size, unsigned int address);
-unsigned int find_top(unsigned char* data, unsigned int base, unsigned int size, unsigned int address);
-unsigned int find_offset(unsigned char* data, unsigned int base, unsigned int size, unsigned char** what);
-unsigned int find_string(unsigned char* data, unsigned int base, unsigned int size, const char* name);
-void* find_function(const char* name, unsigned char* target, unsigned char* base);
+unsigned int find_reference(unsigned int dataaddr, unsigned int base, unsigned int size, const char* signature);
+unsigned int find_top(unsigned int dataaddr, unsigned int base, unsigned int size, unsigned int address);
+unsigned int find_offset(unsigned int dataaddr, unsigned int base, unsigned int size, unsigned char** what);
+unsigned int find_string(unsigned int dataaddr, unsigned int base, unsigned int size, const char* name);
+void* find_function(const char* name, unsigned int target, unsigned int base);
 
 #endif /* LOCK_H */
 

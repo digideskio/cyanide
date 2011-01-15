@@ -43,7 +43,7 @@ void* find_printf() {
 	int j = 0;
 	unsigned int sp;
 	unsigned int* stack = &sp;
-	void(*default_block_write)(void) = find_function("default_block_write", TARGET_BASEADDR, TARGET_BASEADDR);
+	void(*default_block_write)(void) = (void *)find_function("default_block_write", TARGET_BASEADDR, TARGET_BASEADDR);
 	default_block_write();
 	for(i = 0; i < 0x100; i += 4) {
 		unsigned int value = *(stack - i);
@@ -60,11 +60,11 @@ void* find_printf() {
 }
 
 void* find_free() {
-	return find_function("free", TARGET_BASEADDR, TARGET_BASEADDR);
+	return (void *)find_function("free", TARGET_BASEADDR, TARGET_BASEADDR);
 }
 
 void* find_malloc() {
-	void* bytes = patch_find(TARGET_BASEADDR, 0x40000, "\x80\xB5\x00\xAF\x01\x21\x00\x22", 8);
+	void* bytes = (void *)patch_find(TARGET_BASEADDR, 0x40000, "\x80\xB5\x00\xAF\x01\x21\x00\x22", 8);
 	if (bytes==NULL) return NULL;
 	return bytes+1;
 }

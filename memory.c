@@ -70,7 +70,7 @@ int memory_cmd(int argc, CmdArg* argv) {
 			size = argv[4].uinteger;
 			source = (char*) argv[2].uinteger;
 			destination = (char*) argv[3].uinteger;
-			return memcpy(destination, source, size);
+			return (int)memcpy(destination, source, size);
 		}
 	}
 
@@ -79,7 +79,7 @@ int memory_cmd(int argc, CmdArg* argv) {
 			size = argv[4].uinteger;
 			source = (char*) argv[2].uinteger;
 			destination = (char*) argv[3].uinteger;
-			return memmove(destination, source, size);
+			return (int)memmove(destination, source, size);
 		}
 	}
 

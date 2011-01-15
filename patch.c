@@ -50,7 +50,7 @@ int patch_init() {
 
 int patch_cmd(int argc, CmdArg* argv) {
 	unsigned int size = 0;
-	unsigned char* address = NULL;
+	unsigned int address = 0;
 	if(argc != 3) {
 		puts("usage: patch <address> <size>\n");
 		puts("  address           \t\taddress to the image to patch\n");
@@ -59,7 +59,7 @@ int patch_cmd(int argc, CmdArg* argv) {
 	}
 
 	size = argv[2].uinteger;
-	address = (unsigned char*) argv[1].uinteger;
+	address = argv[1].uinteger;
 	return patch_firmware(address, size);
 }
 
@@ -280,7 +280,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 	return 0;
 }
 
-int patch_firmware(unsigned char* address, int size) {
+int patch_firmware(unsigned int address, int size) {
 	unsigned int i = 0;
 	/*
 	CERT: "\x4F\xF0\xFF\x30\xDD\xF8\x40\x24" => "\x00\x20\x00\x20"; armv6
@@ -307,7 +307,7 @@ int patch_firmware(unsigned char* address, int size) {
 		memcpy(cert_offset, patch_cert, 4);
 	}
 
-	unsigned char* image_load = find_function("image_load", LOADADDR, IBOOT_BASEADDR);
+	unsigned int image_load = find_function("image_load", LOADADDR, IBOOT_BASEADDR);
 	printf("Found image_load offset at %p\n", image_load);
 	if(image_load == NULL) {
 		printf("Unable to find image_load function\n");
@@ -329,7 +329,7 @@ int patch_firmware(unsigned char* address, int size) {
 		}
 	}
 
-	unsigned char* command = find_function("cmd_go", LOADADDR, IBOOT_BASEADDR);
+	unsigned char* command = (unsigned char*)find_function("cmd_go", LOADADDR, IBOOT_BASEADDR);
 	if(command == NULL) {
 		printf("Unable to find command patch offset\n");
 	} else {
@@ -345,7 +345,8 @@ int patch_firmware(unsigned char* address, int size) {
 	return 0;
 }
 
-unsigned char* patch_find(unsigned char* start, int length, unsigned char* find, int size) {
+void* patch_find(unsigned int startaddr, int length, unsigned char* find, int size) {
+	unsigned char *start = (unsigned char *)startaddr;
 	int i = 0;
 	for(i = 0; i < length; i++) {
 		if(!memcmp(&start[i], find, size)) {
