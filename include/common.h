@@ -78,6 +78,7 @@ static inline void flip_endian(unsigned char* x, int length) {
 
 int common_init();
 int gpprintf(const char *format, ...);
+unsigned int find_baseaddr(unsigned int addr);
 void printf_begin();
 void panic(const char* why);
 

@@ -59,11 +59,11 @@ void* find_printf() {
 	return 0;
 }
 
-unsigned int find_baseaddr() {
-	unsigned int* i=0;
-	for(i = 0; (unsigned int)i < 0x40; i++) {
-		if(((*i)&0x00ffffff)==0x40) {
-			return ((*i)&0xff000000);
+unsigned int find_baseaddr(unsigned int addr) {
+	unsigned int* i;
+	for(i=addr; (unsigned int)i < addr+0x100; i++) {
+		if(((*i)&0x000fffff)==0x40) {
+			return ((*i)&0xfff00000);
 		}
 	}
 	return 0;
@@ -80,7 +80,7 @@ void* find_malloc() {
 }
 
 int common_init() {
-	gBaseaddr = find_baseaddr();
+	gBaseaddr = find_baseaddr(0);
 	int foundBase = 0;
 	if(gBaseaddr  == NULL) {
 		gBaseaddr = TARGET_BASEADDR;

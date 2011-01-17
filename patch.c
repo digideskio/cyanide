@@ -292,6 +292,14 @@ int patch_firmware(unsigned int address, int size) {
 	      "\x90\xB5\x01\xAF\x84\xB0"
 	*/
 
+	printf("Finding base\n");
+	unsigned int base = find_baseaddr(address);
+	if(base == NULL) {
+		printf("Unable to find base");
+		return -1;
+	}
+	printf("Found base: 0x%08x\n", base);
+
 	printf("Finding RSA patch\n");
 	unsigned char* cert_offset = patch_find(address, size, "\x4F\xF0\xFF\x30\xDD\xF8\x40\x24", 8);
 	if(cert_offset == NULL) {
@@ -307,11 +315,13 @@ int patch_firmware(unsigned int address, int size) {
 		memcpy(cert_offset, patch_cert, 4);
 	}
 
-	unsigned int image_load = find_function("image_load", LOADADDR, IBOOT_BASEADDR);
-	printf("Found image_load offset at %p\n", image_load);
+	unsigned int image_load = find_function("image_load", address, base);
+	image_load = image_load - base + address; // We want the current memory address, not the relocated address
+
 	if(image_load == NULL) {
 		printf("Unable to find image_load function\n");
 	} else {
+		printf("Found image_load offset at %p\n", image_load);
 		unsigned char* permission_offset = patch_find(image_load, size, "\x00\x38\x18\xBF\x01\x20\x80\xBD", 8);
 		if(permission_offset == NULL) {
 			permission_offset = patch_find(image_load, size, "\x83\x43\xD8\x0F\x01\x23\x58\x40", 8);
@@ -329,7 +339,7 @@ int patch_firmware(unsigned int address, int size) {
 		}
 	}
 
-	unsigned char* command = (unsigned char*)find_function("cmd_go", LOADADDR, IBOOT_BASEADDR);
+	unsigned char* command = (unsigned char*)find_function("cmd_go", address, base);
 	if(command == NULL) {
 		printf("Unable to find command patch offset\n");
 	} else {
