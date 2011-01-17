@@ -39,6 +39,7 @@ int fbimg_cmd(int argc, CmdArg* argv);
 void fb_clear();
 void fb_display_text(Bool option);
 void fb_set_loc(unsigned int x, unsigned int y);
+unsigned int find_fbaddr();
 unsigned int fb_get_x();
 unsigned int fb_get_y();
 unsigned int fb_get_width();

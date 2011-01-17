@@ -47,7 +47,11 @@ void hooked(int flags, void* addr, void* phymem);
  */
 
 void* find_cmd_list_begin() {
-	unsigned int reference = find_reference(gBaseaddr, gBaseaddr, 0x40000, "save current environment to flash");
+	unsigned int stringref = find_string(gBaseaddr, gBaseaddr, 0x40000, "save current environment to flash");
+	unsigned int ref1 = find_reference(gBaseaddr, gBaseaddr, 0x40000, stringref);
+	ref1 -= 8;
+	unsigned int reference = find_reference(gBaseaddr, gBaseaddr, 0x40000, ref1);
+
 	if(reference == 0) {
 		printf("Unable to find saveenv description reference\n");
 		return 0;

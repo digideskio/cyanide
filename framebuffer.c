@@ -25,6 +25,7 @@
 #include "commands.h"
 #include "framebuffer.h"
 
+static unsigned int gFbaddr;
 static Font* gFbFont;
 static unsigned int gFbX;
 static unsigned int gFbY;
@@ -45,7 +46,7 @@ inline int font_get_pixel(Font* font, int ch, int x, int y) {
 }
 
 volatile unsigned int* fb_get_pixel(register unsigned int x, register unsigned int y) {
-	return (((unsigned int*)FRAMEBUFFER) + (y * gFbWidth) + x);
+	return (((unsigned int*)gFbaddr) + (y * gFbWidth) + x);
 }
 
 static void fb_scrollup() {
@@ -73,6 +74,12 @@ void fb_setup() {
 
 int fb_init() {
 	if(gFbHasInit) return 0;
+	gFbaddr = find_fbaddr();
+	if (gFbaddr == NULL) {
+		printf("Unable to find framebuffer\n");
+	}
+	printf("Found framebuffer at 0x%x\n", gFbaddr);
+
 	fb_setup();
 	fb_clear();
     fb_set_loc(0,0);
@@ -101,6 +108,16 @@ int fb_init() {
 	cmd_add("fbecho", &fb_cmd, "write characters back to framebuffer");
 	cmd_add("fbimg", &fbimg_cmd, "display image on framebuffer");
 	gFbHasInit = TRUE;
+	return 0;
+}
+
+unsigned int find_fbaddr() {
+	unsigned int timingref = find_string(gBaseaddr, gBaseaddr, 0x40000, "display-timing");
+	unsigned int* reference = (unsigned int*)find_reference(gBaseaddr, gBaseaddr, 0x40000, timingref);
+	reference--;
+	if (((*reference)&0x000fffff)==0) { // OK
+		return *reference;
+	}
 	return 0;
 }
 
@@ -134,7 +151,7 @@ int fbimg_cmd(int argc, CmdArg* argv) {
 
 void fb_clear() {
     unsigned int *p = 0;
-	for(p = (unsigned int*)FRAMEBUFFER; p < (unsigned int*)(FRAMEBUFFER + (gFbWidth * gFbHeight * 4)); p++) {
+	for(p = (unsigned int*)gFbaddr; p < (unsigned int*)(gFbaddr + (gFbWidth * gFbHeight * 4)); p++) {
         *p = gFbBackgroundColor;
     }
 }
