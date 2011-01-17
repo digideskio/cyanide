@@ -89,10 +89,10 @@ int fb_init() {
     fb_set_loc(0,0);
 	fb_display_text(TRUE);
 
-	fb_println("=====================================================");
-	fb_println("                     greenpois0n                     ");
-	fb_println("              http://www.greenpois0n.com             ");
-	fb_println("=====================================================");
+	fb_print_line('=');
+	fb_print_center("greenpois0n\n");
+	fb_print_center("http://www.greenpois0n.com\n");
+	fb_print_line('=');
 
 	cmd_add("fbecho", &fb_cmd, "write characters back to framebuffer");
 	cmd_add("fbimg", &fbimg_cmd, "display image on framebuffer");
@@ -210,15 +210,21 @@ void fb_putc(int c) {
 	}
 }
 
-void fb_println(const char* str) {
+void fb_print_line(char c) {
 	int i;
-	if(!gFbDisplayText)
-		return;
-
-	fb_print(str);
-  for(i=strlen(str);i<gFbTWidth;i++) {
-		fb_print(" ");
+	for(i=0;i<gFbTWidth;i++) {
+		fb_putc(c);
 	}
+	fb_putc('\n');
+}
+
+void fb_print_center(const char* str) {
+	int i;
+	int pad = (gFbTWidth-strlen(str))/2;
+	for(i=0;i<pad;i++) {
+		fb_putc(' ');
+	}
+	fb_print(str);
 }
 
 void fb_print(const char* str) {
