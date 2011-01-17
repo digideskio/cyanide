@@ -61,7 +61,7 @@ extern void*(*_malloc)(unsigned int size);
 extern int(*_printf)(const char *format, ...);
 
 extern void* gLoadaddr;
-extern void* gBaseaddr;
+extern unsigned int gBaseaddr;
 extern void* gRomBaseaddr;
 extern void* gBssBaseaddr;
 extern void* gBootBaseaddr;

@@ -26,10 +26,10 @@
 #include "commands.h"
 
 #ifdef TARGET_TASK_RUNNING
-#	define SELF_TASK_RUNNING ((TaskDescriptor**)(TARGET_BASEADDR + TARGET_TASK_RUNNING))
+#	define SELF_TASK_RUNNING ((TaskDescriptor**)(gBaseaddr + TARGET_TASK_RUNNING))
 #endif
 #ifdef TARGET_TASK_LIST
-#	define SELF_TASK_LIST ((LinkedList*)(TARGET_BASEADDR + TARGET_TASK_LIST))
+#	define SELF_TASK_LIST ((LinkedList*)(gBaseaddr + TARGET_TASK_LIST))
 #endif
 
 #ifndef SELF_TASK_RUNNING

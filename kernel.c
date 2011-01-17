@@ -33,17 +33,17 @@
 
 static char* gKernelAddr = NULL;
 char* gBootArgs = NULL;
-char** gKernelPhyMem = SELF_KERNEL_PHYMEM;
+char** gKernelPhyMem = NULL;
 
 int(*kernel_atv_load)(char* boot_path, char** output) = NULL;
 int(*kernel_load)(void* input, int max_size, char** output) = NULL;
 
 void* find_kernel_bootargs() {
-	return (void*)find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x40000, "rd=md0");
+	return (void*)find_string(gBaseaddr, gBaseaddr, 0x40000, "rd=md0");
 }
 
 void* find_kernel_load() {
-	return find_function("kernel_load", TARGET_BASEADDR, TARGET_BASEADDR);
+	return find_function("kernel_load", gBaseaddr, gBaseaddr);
 }
 
 void* find_kernel_phymem() {
@@ -51,6 +51,9 @@ void* find_kernel_phymem() {
 }
 
 int kernel_init() {
+	/* TODO: Detect this */
+	gKernelPhyMem = SELF_KERNEL_PHYMEM;
+
 	gBootArgs = find_kernel_bootargs();
 	if(gBootArgs == NULL) {
 		puts("Unable to find gBootArgs\n");

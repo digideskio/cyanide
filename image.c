@@ -18,6 +18,7 @@
  **/
 
 #include <stdio.h>
+#include <string.h>
 
 #include "aes.h"
 #include "bdev.h"
@@ -30,7 +31,7 @@
 LinkedList* gImageList = NULL;
 
 void* find_image_list() {
-	unsigned int ref = find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x50000, "tobi");
+	unsigned int ref = find_string(gBaseaddr, gBaseaddr, 0x50000, "tobi");
 	ImageDescriptor* image = (ImageDescriptor*)(ref-0x1C);
 	image = image->list.prev;
 	/* If we have an LLB - list it too... */
@@ -140,27 +141,27 @@ int image_decrypt(void* image) {
 	}
 
 	ImageTagHeader* data_header = (ImageTagHeader*) data;
-    data = (void*) data_header + sizeof(ImageTagHeader);
+	data = (void*) data_header + sizeof(ImageTagHeader);
 
-    /* Decrypt kbag */
+	/* Decrypt kbag */
 #ifdef S5L8720X
-    printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize128, kAesTypeGid);
-    aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, kAesSize128, kAesTypeGid, 0, 0);
+	printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize128, kAesTypeGid);
+	aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, kAesSize128, kAesTypeGid, 0, 0);
 #else
-    printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize256, kAesTypeGid);
+	printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize256, kAesTypeGid);
 	aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, kAesSize256, kAesTypeGid, 0, 0);
 #endif
 
 
-    /* Decrypt data */
-    //FIXME: derive AES type from kbag type
+	/* Decrypt data */
+	//FIXME: derive AES type from kbag type
 #ifdef S5L8720X
-    printf("Decrypting data of size 0x%x with type 0x%x\n", 0x20, kAesTypeGid);
-    aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType128, kbag->key, kbag->iv);
+	printf("Decrypting data of size 0x%x with type 0x%x\n", 0x20, kAesTypeGid);
+	aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType128, kbag->key, kbag->iv);
 
 #else
-    printf("Decrypting data of size 0x%x with type 0x%x\n", 0x30, kAesTypeGid);
-    aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType256, kbag->key, kbag->iv);
+	printf("Decrypting data of size 0x%x with type 0x%x\n", 0x30, kAesTypeGid);
+	aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType256, kbag->key, kbag->iv);
 #endif
 	return 0;
 }

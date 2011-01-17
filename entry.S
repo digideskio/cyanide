@@ -92,6 +92,7 @@ relocate_old:
 relocate:
 	mov	r4, r1
 	bl	copy
+	bl	find_baseaddr
 	bl	patch
 	cmp	r5, #0x09
 	bne	flush_new
@@ -134,13 +135,14 @@ copy_loop:
 @---------------------------------------------
 .code 32
 patch:
-	push	{lr}
+	push	{r8, lr}
+	mov r8, r0
 	mov	r0, pc
 	lsr	r0, #24
 
 patch1:
 	ldr	r0, =FP_CMD_1
-	ldr	r1, =TARGET_BASEADDR
+	mov	r1, r8
 	mov	r2, #0x2c000		@ search area
 	ldr	r3, =FP_CMD_2
 	blx	find_64
@@ -154,7 +156,7 @@ patch1:
 
 patch2:
 	ldr	r0, =FP_CMD2_1
-	ldr	r1, =TARGET_BASEADDR
+	mov	r1, r8
 	mov	r2, #0x24000		@ search area
 	ldr	r3, =FP_CMD2_2
 	blx	find_64
@@ -169,7 +171,7 @@ patch2:
 patch3:
 
 patch_done:
-	pop	{pc}
+	pop	{r8, pc}
 
 @---------------------------------------------
 .code 16
@@ -222,5 +224,25 @@ clear_dcache:
     mcr p15, 0, r0, c7, c10, 4  @ Data Synchronization Barrier
     bx lr
 
+@---------------------------------------------
+.code 32
+find_baseaddr:
+	push	{r1-r2, lr}
+	mov	r1, #0	/* Address */
+find_baseaddr_loop:
+	ldr	r0, [r1, #0]
+	bic	r2, r0, #0xff000000
+	cmp	r2, #0x40
+	bne	find_baseaddr_loop_next
+	ldr	r0, [r1, #0]
+	and	r0, r0, #0xff000000
+	b	find_baseaddr_loop_end
+find_baseaddr_loop_next:
+	add	r1, r1, #4
+	cmp	r1, #0x40
+	bls	find_baseaddr_loop
+	mov	r0, #0
+find_baseaddr_loop_end:
+	pop	{r1-r2, pc}
 @---------------------------------------------
 .end

@@ -26,7 +26,7 @@
 #include "common.h"
 #include "commands.h"
 
-BdevDescriptor** gBdevList = (void*) SELF_BDEV_LIST;
+BdevDescriptor** gBdevList = NULL;
 
 void* find_bdev_list() {
 	return 0;
@@ -34,6 +34,7 @@ void* find_bdev_list() {
 
 int bdev_init() {
 	//gBdevList = find_bdev_list();
+	gBdevList = (void*) SELF_BDEV_LIST;
 	if(gBdevList == NULL) {
 		puts("Unable to find gBdevList\n");
 	} else {

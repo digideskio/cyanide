@@ -47,7 +47,7 @@ void hooked(int flags, void* addr, void* phymem);
  */
 
 void* find_cmd_list_begin() {
-	unsigned int reference = find_reference(TARGET_BASEADDR, TARGET_BASEADDR, 0x40000, "save current environment to flash");
+	unsigned int reference = find_reference(gBaseaddr, gBaseaddr, 0x40000, "save current environment to flash");
 	if(reference == 0) {
 		printf("Unable to find saveenv description reference\n");
 		return 0;
@@ -57,8 +57,8 @@ void* find_cmd_list_begin() {
 	for(i = 0; i < 0x80; i += 4) {
 		unsigned int* command = (unsigned int*)(reference-i);
 		if(	*command == NULL ||
-				(unsigned int)command < TARGET_BASEADDR || (unsigned int)command >= TARGET_BASEADDR + 0x40000 ||
-				*command < TARGET_BASEADDR || *command >= TARGET_BASEADDR + 0x40000) {
+				(unsigned int)command < gBaseaddr || (unsigned int)command >= gBaseaddr + 0x40000 ||
+				*command < gBaseaddr || *command >= gBaseaddr + 0x40000) {
 			return command+1;
 		}
 	}
@@ -80,22 +80,22 @@ void* find_cmd_list_end() {
 
 void* find_jump_to() {
 	void* bytes = NULL;
-	if(strstr((char*) (TARGET_BASEADDR + 0x200), "n72ap")) {
-		bytes = patch_find(TARGET_BASEADDR, 0x40000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
+	if(strstr((char*) (gBaseaddr + 0x200), "n72ap")) {
+		bytes = patch_find(gBaseaddr, 0x40000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
 		bytes++;
 	} else {
-		bytes = patch_find(TARGET_BASEADDR, 0x40000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
+		bytes = patch_find(gBaseaddr, 0x40000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
 		bytes++;
 	}
 	return bytes;
 }
 
 void* find_load_ramdisk() {
-	return find_function("cmd_ramdisk", TARGET_BASEADDR, TARGET_BASEADDR);
+	return find_function("cmd_ramdisk", gBaseaddr, gBaseaddr);
 }
 
 void* find_fsboot() {
-	return find_function("fsboot", TARGET_BASEADDR, TARGET_BASEADDR);
+	return find_function("fsboot", gBaseaddr, gBaseaddr);
 }
 
 int cmd_init() {
@@ -380,11 +380,11 @@ int cmd_rdboot(int argc, CmdArg* argv) {
 	}
 
 	// search for jump_to function
-	if(strstr((char*) (TARGET_BASEADDR + 0x200), "n72ap")) {
-		jump_to = patch_find(TARGET_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
+	if(strstr((char*) (gBaseaddr + 0x200), "n72ap")) {
+		jump_to = patch_find(gBaseaddr, 0x30000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
 	} else {
 		// 80  B5  00  AF  04  46  15  46
-		jump_to = patch_find(TARGET_BASEADDR, 0x30000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
+		jump_to = patch_find(gBaseaddr, 0x30000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
 	}
 	printf("Found jump_to function at %p\n", jump_to);
 
@@ -400,10 +400,10 @@ int cmd_rdboot(int argc, CmdArg* argv) {
 }
 
 int cmd_test(int argc, CmdArg* argv) {
-	printf("aes_crypto_cmd: 0x%08x\n", find_function("aes_crypto_cmd", TARGET_BASEADDR, TARGET_BASEADDR));
-	printf("free: 0x%08x\n", find_function("free", TARGET_BASEADDR, TARGET_BASEADDR));
-	printf("cmd_ramdisk: 0x%08x\n", find_function("cmd_ramdisk", TARGET_BASEADDR, TARGET_BASEADDR));
-	printf("fs_mount: 0x%08x\n", find_function("fs_mount", TARGET_BASEADDR, TARGET_BASEADDR));
+	printf("aes_crypto_cmd: 0x%08x\n", find_function("aes_crypto_cmd", gBaseaddr, gBaseaddr));
+	printf("free: 0x%08x\n", find_function("free", gBaseaddr, gBaseaddr));
+	printf("cmd_ramdisk: 0x%08x\n", find_function("cmd_ramdisk", gBaseaddr, gBaseaddr));
+	printf("fs_mount: 0x%08x\n", find_function("fs_mount", gBaseaddr, gBaseaddr));
 	return 0;
 }
 

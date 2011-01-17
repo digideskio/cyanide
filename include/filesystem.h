@@ -26,10 +26,10 @@
 #include "commands.h"
 
 #ifdef TARGET_FS_UNMOUNT
-#	define SELF_FS_UNMOUNT ((void*)(TARGET_BASEADDR + TARGET_FS_UNMOUNT))
+#	define SELF_FS_UNMOUNT ((void*)(gBaseaddr + TARGET_FS_UNMOUNT))
 #endif
 #ifdef TARGET_FS_LOAD_FILE
-#	define SELF_FS_LOAD_FILE ((void*)(TARGET_BASEADDR + TARGET_FS_LOAD_FILE))
+#	define SELF_FS_LOAD_FILE ((void*)(gBaseaddr + TARGET_FS_LOAD_FILE))
 #endif
 
 #ifndef SELF_FS_UNMOUNT

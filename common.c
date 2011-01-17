@@ -31,7 +31,7 @@ void*(*_malloc)(unsigned int size) = NULL;
 int(*_printf)(const char *fmt, ...) = NULL;
 
 void* gLoadaddr = NULL;
-void* gBaseaddr = NULL;
+unsigned int gBaseaddr = NULL;
 void* gRomBaseaddr = NULL;
 void* gBssBaseaddr = NULL;
 void* gBootBaseaddr = NULL;
@@ -43,11 +43,11 @@ void* find_printf() {
 	int j = 0;
 	unsigned int sp;
 	unsigned int* stack = &sp;
-	void(*default_block_write)(void) = (void *)find_function("default_block_write", TARGET_BASEADDR, TARGET_BASEADDR);
+	void(*default_block_write)(void) = (void *)find_function("default_block_write", gBaseaddr, gBaseaddr);
 	default_block_write();
 	for(i = 0; i < 0x100; i += 4) {
 		unsigned int value = *(stack - i);
-		if((value & TARGET_BASEADDR) == TARGET_BASEADDR) {
+		if((value & gBaseaddr) == gBaseaddr) {
 			for(j = 0; j < 0x100; j++) {
 				unsigned short* instruction = (unsigned short*)(value + j);
 				if(*instruction == 0xB40F) {
@@ -59,22 +59,45 @@ void* find_printf() {
 	return 0;
 }
 
+unsigned int find_baseaddr() {
+	unsigned int* i=0;
+	for(i = 0; (unsigned int)i < 0x40; i++) {
+		if(((*i)&0x00ffffff)==0x40) {
+			return ((*i)&0xff000000);
+		}
+	}
+	return 0;
+}
+
 void* find_free() {
-	return (void *)find_function("free", TARGET_BASEADDR, TARGET_BASEADDR);
+	return (void *)find_function("free", gBaseaddr, gBaseaddr);
 }
 
 void* find_malloc() {
-	void* bytes = (void *)patch_find(TARGET_BASEADDR, 0x40000, "\x80\xB5\x00\xAF\x01\x21\x00\x22", 8);
+	void* bytes = (void *)patch_find(gBaseaddr, 0x40000, "\x80\xB5\x00\xAF\x01\x21\x00\x22", 8);
 	if (bytes==NULL) return NULL;
 	return bytes+1;
 }
 
 int common_init() {
+	gBaseaddr = find_baseaddr();
+	int foundBase = 0;
+	if(gBaseaddr  == NULL) {
+		gBaseaddr = TARGET_BASEADDR;
+	} else {
+		foundBase=1;
+	}
+
 	_printf = find_printf();
 	if(_printf == NULL) {
 		fb_print("Unable to find printf\n");
 		return -1;
 	} else {
+		if(foundBase)
+			printf("Found gBaseaddr at 0x%x\n", gBaseaddr);
+		else
+			fb_print("Unable to find gBaseaddr\n");
+			
 		printf("Found printf at 0x%x\n", _printf);
 	}
 

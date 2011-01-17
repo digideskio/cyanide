@@ -26,7 +26,7 @@
 #include "commands.h"
 
 #ifdef TARGET_KERNEL_PHYMEM
-#	define SELF_KERNEL_PHYMEM ((void*)(TARGET_BASEADDR + TARGET_KERNEL_PHYMEM))
+#	define SELF_KERNEL_PHYMEM ((void*)(gBaseaddr + TARGET_KERNEL_PHYMEM))
 #endif
 
 #ifndef SELF_KERNEL_PHYMEM

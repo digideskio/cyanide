@@ -27,14 +27,14 @@
 #include "commands.h"
 #include "functions.h"
 
-LinkedList* gTaskList = SELF_TASK_LIST;
-TaskDescriptor** gTaskRunning = SELF_TASK_RUNNING;
+LinkedList* gTaskList = NULL;
+TaskDescriptor** gTaskRunning = NULL;
 void(*task_yield)(void) = NULL;
 void(*task_start)(TaskDescriptor* task) = NULL;
 TaskDescriptor*(*task_create)(char* name, Task task, void* arg, unsigned int stack) = NULL;
 
 void* find_task_yield() {
-	return find_function("task_yield", TARGET_BASEADDR, TARGET_BASEADDR);
+	return find_function("task_yield", gBaseaddr, gBaseaddr);
 }
 
 void* find_task_running() {
@@ -46,15 +46,15 @@ void* find_task_list() {
 }
 
 void* find_task_create() {
-	return find_function("task_create", TARGET_BASEADDR, TARGET_BASEADDR);
+	return find_function("task_create", gBaseaddr, gBaseaddr);
 }
 
 void* find_task_exit() {
-	return find_function("task_exit", TARGET_BASEADDR, TARGET_BASEADDR);
+	return find_function("task_exit", gBaseaddr, gBaseaddr);
 }
 
 void* find_task_start() {
-	unsigned int x = patch_find(TARGET_BASEADDR, 0x40000, "\x90\xB5\x01\xAF\x43\x69\x04\x46", 8);
+	unsigned int x = patch_find(gBaseaddr, 0x40000, "\x90\xB5\x01\xAF\x43\x69\x04\x46", 8);
 	return (void*)(x+1);
 }
 
@@ -67,6 +67,7 @@ int task_init() {
 	}
 
 	//gTaskRunning = find_task_running();
+	gTaskRunning = SELF_TASK_RUNNING;
 	if(gTaskRunning == NULL) {
 		puts("Unable to find gTaskRunning\n");
 	} else {
@@ -74,6 +75,7 @@ int task_init() {
 	}
 
 	//gTaskList = find_task_list();
+	gTaskList = SELF_TASK_LIST;
 	if(gTaskList == NULL) {
 		puts("Unable to find gTaskList\n");
 	} else {

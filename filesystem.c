@@ -21,12 +21,12 @@
 
 #include "filesystem.h"
 
-int(*fs_load_file)(const char *path, void* address, unsigned int* size) = SELF_FS_LOAD_FILE;
+int(*fs_load_file)(const char *path, void* address, unsigned int* size) = NULL;
 void(*fs_mount)(const char *partition, const char *type, const char *path) = NULL;
-void(*fs_unmount)(const char *path) = SELF_FS_UNMOUNT;
+void(*fs_unmount)(const char *path) = NULL;
 
 void* find_fs_mount() {
-	return (void*)find_function("fs_mount", TARGET_BASEADDR, TARGET_BASEADDR);
+	return (void*)find_function("fs_mount", gBaseaddr, gBaseaddr);
 }
 
 void* find_fs_unmount() {
@@ -46,6 +46,7 @@ int fs_init() {
 	}
 
 	//fs_unmount = find_fs_unmount();
+	fs_unmount = SELF_FS_UNMOUNT;
 	if(fs_unmount == NULL) {
 		puts("Unable to find fs_unmount\n");
 	} else {
@@ -53,6 +54,7 @@ int fs_init() {
 	}
 
 	//fs_load_file = find_fs_load_file();
+	fs_load_file = SELF_FS_LOAD_FILE;
 	if(fs_load_file == NULL) {
 		puts("Unable to find fs_load_file\n");
 	} else {

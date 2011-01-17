@@ -33,6 +33,9 @@
 
 #define IMAGE_DATA       0x44415441
 #define IMAGE_KBAG       0x4B424147
+#define IMAGE_SHSH       0x53485348
+#define IMAGE_CERT       0x43455254
+#define IMAGE_ECID       0x45434944
 #define IMAGE_COMP       0x636F6D70
 #define IMAGE_LZSS       0x6C7A7373
 
@@ -73,6 +76,22 @@ typedef struct ImageKbag {
 	unsigned char iv[16];
 	unsigned char key[32];
 } ImageKbag;
+
+typedef struct ImageECID {
+	ImageTagHeader header;
+	unsigned int ecidl;
+	unsigned int ecidh;
+} ImageECID;
+
+typedef struct ImageSHSH {
+	ImageTagHeader header;
+	unsigned char shsh[0x80];
+} ImageSHSH;
+
+typedef struct ImageCERT {
+	ImageTagHeader header;
+	unsigned char cert_start;
+} ImageCERT;
 
 typedef struct ImageComp {
     unsigned int signature;

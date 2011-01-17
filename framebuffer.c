@@ -99,6 +99,7 @@ int fb_init() {
 	fb_print("=====================================================");
 
 	cmd_add("fbecho", &fb_cmd, "write characters back to framebuffer");
+	cmd_add("fbimg", &fbimg_cmd, "display image on framebuffer");
 	gFbHasInit = TRUE;
 	return 0;
 }
@@ -119,6 +120,16 @@ int fb_cmd(int argc, CmdArg* argv) {
 	//exit_critical_section();
 	fb_print("\n");
 	return 0;
+}
+
+int fbimg_cmd(int argc, CmdArg* argv) {
+	cmd_start();
+	if (argc < 2) {
+		puts("usage: fbimg <address>\n");
+		return 0;
+	}
+
+	fb_draw_image((unsigned int*)argv[1].uinteger, 0, 0, gFbTWidth, gFbTHeight);
 }
 
 void fb_clear() {
