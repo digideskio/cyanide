@@ -129,5 +129,6 @@ int image_decrypt(void* image);
 ImageDescriptor* image_find(unsigned int signature);
 void* image_find_tag(void* image, unsigned int tag, unsigned int size);
 int image_load(unsigned int signature, void* dataout, unsigned int maxsize);
+char* image_shsh(void* image);
 
 #endif

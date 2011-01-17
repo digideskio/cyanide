@@ -61,7 +61,7 @@ void* find_printf() {
 
 unsigned int find_baseaddr(unsigned int addr) {
 	unsigned int* i;
-	for(i=addr; (unsigned int)i < addr+0x100; i++) {
+	for(i=(void*)addr; (unsigned int)i < addr+0x100; i++) {
 		if(((*i)&0x000fffff)==0x40) {
 			return ((*i)&0xfff00000);
 		}

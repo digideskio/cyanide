@@ -61,6 +61,7 @@ int image_cmd(int argc, CmdArg* argv) {
 		puts("  list                   \t\tdisplay list of bdev images\n");
 		puts("  load <image> <address> \t\tload an img3 from bdev\n");
 		puts("  decrypt <address>      \t\tdecrypt an img3 in memory\n");
+		puts("  shsh <image>           \t\textract SHSH from img3 on bdev\n");
 		return 0;
 	}
 
@@ -73,6 +74,9 @@ int image_cmd(int argc, CmdArg* argv) {
 		if(!strcmp(action, "decrypt")) {
 			address = (void*) argv[2].uinteger;
 			return image_decrypt(address);
+		} else if(!strcmp(action, "shsh")) {
+			address = (void*) argv[2].uinteger;
+			return (int)image_shsh(address);
 		}
 	}
 
@@ -121,6 +125,32 @@ void* image_find_tag(void* image, unsigned int tag, unsigned int size) {
 		current++;
 	}
 	return 0;
+}
+
+char* image_shsh(void* image) {
+	ImageHeader* header = (ImageHeader*)0x41010000;
+	if (image_read(image, header, 0)!=0) {
+		return 0;
+	}
+
+	ImageSHSH* shsh = (ImageSHSH*)((int)header + sizeof(ImageHeader) + header->shshOffset);
+	ImageECID* ecid = (ImageECID*)((int)shsh - 0x40);
+	ImageCERT* cert = (ImageCERT*)((int)shsh + shsh->header.fullSize);
+	if (	ecid->header.signature != IMAGE_ECID ||
+				shsh->header.signature != IMAGE_SHSH ||
+				cert->header.signature != IMAGE_CERT
+		) {
+		printf("Unable to find SHSH Blobs at 0x%08x\n", ecid);
+		return 0;
+	}
+	unsigned int len = shsh->header.fullSize + ecid->header.fullSize + cert->header.fullSize;
+	printf("Found SHSH blob for ECID: %08x%08x at 0x%08x length: %x\n", ecid->ecidh, ecid->ecidl, ecid, len);
+	int i;
+	for(i=0;i<len;i++) {
+		printf("%02X", *(unsigned char*)((unsigned int)ecid + i));
+	}
+	printf("\n");
+	return gLoadaddr;
 }
 
 int image_decrypt(void* image) {
@@ -178,7 +208,7 @@ ImageDescriptor* image_find(unsigned int signature) {
 	return NULL;
 }
 
-int image_load(unsigned int signature, void* dataout, unsigned int maxsize) {
+int image_read(unsigned int signature, void* dataout, unsigned int maxsize) {
 	ImageDescriptor* image = image_find(signature);
 	if(image == NULL) {
 		puts("unable to find requested image\n");
@@ -188,5 +218,11 @@ int image_load(unsigned int signature, void* dataout, unsigned int maxsize) {
 	image->device->read(image->device, dataout,
 			(void*) image->startAddress, 0, image->info.imageSize);
 
-	image_decrypt(dataout);
+	return 0;
+}
+
+int image_load(unsigned int signature, void* dataout, unsigned int maxsize) {
+	if (image_read(signature, dataout, maxsize)==0) {
+		image_decrypt(dataout);
+	}
 }
