@@ -25,6 +25,7 @@
 #include "commands.h"
 #include "framebuffer.h"
 
+fb_info* gFbInfo = NULL;
 static unsigned int gFbaddr;
 static Font* gFbFont;
 static unsigned int gFbX;
@@ -63,47 +64,35 @@ static void fb_scrollup() {
 }
 
 void fb_setup() {
+	gFbaddr = gFbInfo->fbuffer;
 	gFbFont = (Font*) font_data;
 	gFbBackgroundColor = COLOR_BLACK;
 	gFbForegroundColor = COLOR_WHITE;
-	gFbWidth = FRAMEBUFFER_WIDTH;
-	gFbHeight = FRAMEBUFFER_HEIGHT;
+	gFbWidth = gFbInfo->width;
+	gFbHeight = gFbInfo->height;
 	gFbTWidth = gFbWidth / gFbFont->width;
 	gFbTHeight = gFbHeight / gFbFont->height;
 }
 
 int fb_init() {
 	if(gFbHasInit) return 0;
-	gFbaddr = find_fbaddr();
-	if (gFbaddr == NULL) {
-		printf("Unable to find framebuffer\n");
+	gFbInfo = find_fbinfo();
+	if (gFbInfo == NULL) {
+		printf("Unable to find framebuffer info\n");
+		return -1;
 	}
-	printf("Found framebuffer at 0x%x\n", gFbaddr);
+	printf("Found framebuffer info at 0x%x\n", gFbInfo);
+	printf("Framebuffer dimentions: %dx%d\n", gFbInfo->width, gFbInfo->height);
 
 	fb_setup();
 	fb_clear();
     fb_set_loc(0,0);
 	fb_display_text(TRUE);
 
-	fb_print("=====================================================");
-#ifdef S5L8930X
-	fb_print("=====================================================");
-	fb_print("                          ");
-#endif
-
-	fb_print("                     greenpois0n                     ");
-
-#ifdef S5L8930X
-	fb_print("                                                     ");
-#endif
-
-	fb_print("              http://www.greenpois0n.com             ");
-
-#ifdef S5L8930X
-	fb_print("                           ");
-	fb_print("=====================================================");
-#endif
-	fb_print("=====================================================");
+	fb_println("=====================================================");
+	fb_println("                     greenpois0n                     ");
+	fb_println("              http://www.greenpois0n.com             ");
+	fb_println("=====================================================");
 
 	cmd_add("fbecho", &fb_cmd, "write characters back to framebuffer");
 	cmd_add("fbimg", &fbimg_cmd, "display image on framebuffer");
@@ -111,12 +100,12 @@ int fb_init() {
 	return 0;
 }
 
-unsigned int find_fbaddr() {
-	unsigned int timingref = find_string(gBaseaddr, gBaseaddr, 0x40000, "display-timing");
-	unsigned int* reference = (unsigned int*)find_reference(gBaseaddr, gBaseaddr, 0x40000, timingref);
-	reference--;
-	if (((*reference)&0x000fffff)==0) { // OK
-		return *reference;
+fb_info* find_fbinfo() {
+	unsigned int fbref = find_string(gBaseaddr, gBaseaddr, 0x40000, "framebuffer");
+	unsigned int** fbinforef = (unsigned int**)(find_reference(gBaseaddr, gBaseaddr, 0x40000, fbref) - 4);
+	fb_info* reference = (fb_info*)(**fbinforef + 0x20);
+	if (((reference->fbuffer)&0x000fffff)==0) { // OK
+		return reference;
 	}
 	return 0;
 }
@@ -218,6 +207,17 @@ void fb_putc(int c) {
 
 	if(gFbY == gFbTHeight) {
 		fb_scrollup();
+	}
+}
+
+void fb_println(const char* str) {
+	int i;
+	if(!gFbDisplayText)
+		return;
+
+	fb_print(str);
+  for(i=strlen(str);i<gFbTWidth;i++) {
+		fb_print(" ");
 	}
 }
 

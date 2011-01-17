@@ -31,6 +31,21 @@ typedef struct Font {
 	unsigned char data[];
 } Font;
 
+typedef struct fb_info {
+	unsigned int fbuffer;
+	unsigned int width;
+	unsigned int height;
+	unsigned int linelen;
+	unsigned int unk1;
+	unsigned int unk2;
+	unsigned int unk3;
+	void (*plot)(struct fb_info* fbdata, unsigned int x, unsigned int y, unsigned int color);
+	unsigned int (*get_pixel)(struct fb_info* fbdata, unsigned int x, unsigned int y);
+	void (*hline)(struct fb_info* fbdata, unsigned int x, unsigned int y, unsigned int length, unsigned int color);
+	void (*vline)(struct fb_info* fbdata, unsigned int x, unsigned int y, unsigned int length, unsigned int color);
+} fb_info;
+	
+
 extern Bool gFbHasInit;
 
 int fb_init();
@@ -39,12 +54,13 @@ int fbimg_cmd(int argc, CmdArg* argv);
 void fb_clear();
 void fb_display_text(Bool option);
 void fb_set_loc(unsigned int x, unsigned int y);
-unsigned int find_fbaddr();
+fb_info* find_fbinfo();
 unsigned int fb_get_x();
 unsigned int fb_get_y();
 unsigned int fb_get_width();
 unsigned int fb_get_height();
 void fb_putc(int c);
+void fb_println(const char* str);
 void fb_print(const char* str);
 void fb_print_force(const char* str);
 void fb_draw_image(unsigned int* image, unsigned int x, unsigned int y, unsigned int width, unsigned int height);
