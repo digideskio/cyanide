@@ -215,7 +215,6 @@ void fb_print_line(char c) {
 	for(i=0;i<gFbTWidth;i++) {
 		fb_putc(c);
 	}
-	fb_putc('\n');
 }
 
 void fb_print_center(const char* str) {
